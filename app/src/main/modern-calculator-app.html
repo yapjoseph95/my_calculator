@@ -1,0 +1,1398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>FinCalc - Car Loan & DSR Calculator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        :root {
+            --bg-primary: #f8f9fa;
+            --bg-secondary: #ffffff;
+            --text-primary: #1a1a1a;
+            --text-secondary: #6c757d;
+            --accent-blue: #007aff;
+            --accent-green: #34c759;
+            --accent-orange: #ff9500;
+            --accent-red: #ff3b30;
+            --accent-purple: #af52de;
+            --card-shadow: rgba(0, 0, 0, 0.08);
+            --border: #e9ecef;
+            --input-bg: #f1f3f5;
+            --success: #34c759;
+            --warning: #ff9500;
+            --danger: #ff3b30;
+        }
+
+        [data-theme="dark"] {
+            --bg-primary: #000000;
+            --bg-secondary: #1c1c1e;
+            --text-primary: #ffffff;
+            --text-secondary: #8e8e93;
+            --accent-blue: #0a84ff;
+            --accent-green: #30d158;
+            --accent-orange: #ff9f0a;
+            --accent-red: #ff453a;
+            --accent-purple: #bf5af2;
+            --card-shadow: rgba(255, 255, 255, 0.05);
+            --border: #38383a;
+            --input-bg: #2c2c2e;
+            --success: #30d158;
+            --warning: #ff9f0a;
+            --danger: #ff453a;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            transition: background 0.3s ease;
+        }
+
+        .mobile-frame {
+            max-width: 428px;
+            margin: 0 auto;
+            min-height: 100vh;
+            background: var(--bg-primary);
+            position: relative;
+        }
+
+        /* Status Bar */
+        .status-bar {
+            height: 44px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .status-left, .status-right {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* Navigation Bar */
+        .navbar {
+            background: var(--bg-secondary);
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+
+        .nav-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .back-btn {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            background: var(--input-bg);
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: var(--text-primary);
+        }
+
+        .back-btn:active {
+            transform: scale(0.95);
+        }
+
+        .nav-title {
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+        }
+
+        .theme-toggle {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: var(--input-bg);
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .theme-toggle:active {
+            transform: scale(0.9);
+        }
+
+        .theme-toggle svg {
+            width: 20px;
+            height: 20px;
+            fill: var(--text-primary);
+        }
+
+        /* Home Page */
+        .home-page {
+            display: block;
+            padding: 20px;
+            padding-bottom: 100px;
+        }
+
+        .home-header {
+            margin-bottom: 32px;
+            text-align: center;
+        }
+
+        .greeting {
+            font-size: 36px;
+            font-weight: 800;
+            margin-bottom: 8px;
+            letter-spacing: -1.5px;
+        }
+
+        .subtitle {
+            font-size: 16px;
+            color: var(--text-secondary);
+        }
+
+        .calculator-grid {
+            display: grid;
+            gap: 16px;
+        }
+
+        .calc-card {
+            background: var(--bg-secondary);
+            border-radius: 24px;
+            padding: 24px;
+            box-shadow: 0 4px 20px var(--card-shadow);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .calc-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--gradient-start), var(--gradient-end));
+        }
+
+        .calc-card.blue {
+            --gradient-start: #007aff;
+            --gradient-end: #5ac8fa;
+        }
+
+        .calc-card.orange {
+            --gradient-start: #ff9500;
+            --gradient-end: #ff2d55;
+        }
+
+        .calc-card:active {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 32px var(--card-shadow);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .card-icon {
+            width: 64px;
+            height: 64px;
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            flex-shrink: 0;
+        }
+
+        .card-icon.blue {
+            background: linear-gradient(135deg, #007aff 0%, #5ac8fa 100%);
+        }
+
+        .card-icon.orange {
+            background: linear-gradient(135deg, #ff9500 0%, #ff2d55 100%);
+        }
+
+        .card-content {
+            flex: 1;
+        }
+
+        .card-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 4px;
+            letter-spacing: -0.3px;
+        }
+
+        .card-subtitle {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .card-desc {
+            font-size: 15px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+            margin-bottom: 16px;
+        }
+
+        .card-features {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .feature-tag {
+            padding: 6px 12px;
+            background: var(--input-bg);
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        /* Calculator Page */
+        .calculator-page {
+            display: none;
+            padding: 0 20px 100px;
+            animation: slideIn 0.3s ease;
+        }
+
+        .page-header {
+            padding: 24px 0;
+            text-align: center;
+        }
+
+        .page-icon {
+            font-size: 56px;
+            margin-bottom: 16px;
+            animation: bounce 0.6s ease;
+        }
+
+        .page-title {
+            font-size: 28px;
+            font-weight: 800;
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+
+        .page-desc {
+            font-size: 15px;
+            color: var(--text-secondary);
+            max-width: 300px;
+            margin: 0 auto;
+        }
+
+        /* Form Section */
+        .form-section {
+            background: var(--bg-secondary);
+            border-radius: 24px;
+            padding: 24px;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 20px var(--card-shadow);
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .section-icon {
+            font-size: 24px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+        }
+
+        .form-row {
+            margin-bottom: 24px;
+        }
+
+        .form-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .form-label {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-secondary);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .info-icon {
+            width: 16px;
+            height: 16px;
+            background: var(--input-bg);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: help;
+        }
+
+        .input-group {
+            position: relative;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 18px 20px;
+            font-size: 22px;
+            font-weight: 700;
+            border: 2px solid var(--border);
+            border-radius: 16px;
+            background: var(--input-bg);
+            color: var(--text-primary);
+            outline: none;
+            transition: all 0.2s ease;
+            -webkit-appearance: none;
+        }
+
+        .input-field:focus {
+            border-color: var(--accent-blue);
+            background: var(--bg-secondary);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px var(--card-shadow);
+        }
+
+        .input-prefix {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--text-secondary);
+            pointer-events: none;
+        }
+
+        .input-field.has-prefix {
+            padding-left: 56px;
+        }
+
+        .input-suffix {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-secondary);
+            pointer-events: none;
+        }
+
+        .input-field.has-suffix {
+            padding-right: 56px;
+        }
+
+        /* Slider */
+        .slider-container {
+            margin-top: 16px;
+            padding: 16px;
+            background: var(--input-bg);
+            border-radius: 12px;
+        }
+
+        .slider-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .slider-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .slider-value {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--accent-blue);
+        }
+
+        .slider-track {
+            width: 100%;
+            height: 8px;
+            background: var(--bg-secondary);
+            border-radius: 4px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .slider-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple));
+            transition: width 0.2s ease;
+            border-radius: 4px;
+        }
+
+        .slider-input {
+            width: 100%;
+            height: 8px;
+            position: absolute;
+            top: 0;
+            left: 0;
+            opacity: 0;
+            cursor: pointer;
+            -webkit-appearance: none;
+        }
+
+        .slider-range {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 8px;
+            font-size: 11px;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        /* Select Dropdown */
+        .select-field {
+            width: 100%;
+            padding: 18px 20px;
+            font-size: 18px;
+            font-weight: 700;
+            border: 2px solid var(--border);
+            border-radius: 16px;
+            background: var(--input-bg);
+            color: var(--text-primary);
+            outline: none;
+            cursor: pointer;
+            -webkit-appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg width='14' height='9' viewBox='0 0 14 9' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1.5L7 7.5L13 1.5' stroke='%236c757d' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 20px center;
+            padding-right: 56px;
+            transition: all 0.2s ease;
+        }
+
+        .select-field:focus {
+            border-color: var(--accent-blue);
+            background-color: var(--bg-secondary);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px var(--card-shadow);
+        }
+
+        /* Quick Amount Buttons */
+        .quick-amounts {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .quick-btn {
+            padding: 12px;
+            background: var(--input-bg);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .quick-btn:active {
+            transform: scale(0.95);
+            border-color: var(--accent-blue);
+            background: var(--accent-blue);
+            color: white;
+        }
+
+        /* Calculate Button */
+        .calculate-btn {
+            width: 100%;
+            padding: 20px;
+            font-size: 18px;
+            font-weight: 800;
+            color: white;
+            background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-purple) 100%);
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 24px rgba(0, 122, 255, 0.35);
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .calculate-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .calculate-btn:hover::before {
+            left: 100%;
+        }
+
+        .calculate-btn:active {
+            transform: scale(0.98);
+        }
+
+        /* Results Section */
+        .results-section {
+            background: var(--bg-secondary);
+            border-radius: 24px;
+            padding: 24px;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 20px var(--card-shadow);
+            animation: slideUp 0.4s ease;
+        }
+
+        .result-primary {
+            background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-purple) 100%);
+            border-radius: 20px;
+            padding: 28px;
+            text-align: center;
+            margin-bottom: 20px;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .result-primary::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+        }
+
+        .result-label {
+            font-size: 13px;
+            font-weight: 700;
+            opacity: 0.9;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .result-amount {
+            font-size: 44px;
+            font-weight: 900;
+            letter-spacing: -2px;
+            margin-bottom: 8px;
+        }
+
+        .result-subtext {
+            font-size: 14px;
+            opacity: 0.8;
+        }
+
+        /* Result Grid */
+        .result-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .result-item {
+            background: var(--input-bg);
+            border-radius: 16px;
+            padding: 18px;
+            transition: all 0.2s ease;
+        }
+
+        .result-item:active {
+            transform: scale(0.97);
+        }
+
+        .result-item-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .result-item-value {
+            font-size: 22px;
+            font-weight: 800;
+            color: var(--text-primary);
+            letter-spacing: -0.5px;
+        }
+
+        /* DSR Status Badge */
+        .dsr-status {
+            background: var(--input-bg);
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .status-icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+        }
+
+        .status-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .status-desc {
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        .dsr-status.healthy {
+            background: linear-gradient(135deg, rgba(52, 199, 89, 0.15), rgba(100, 210, 255, 0.15));
+        }
+
+        .dsr-status.healthy .status-title {
+            color: var(--success);
+        }
+
+        .dsr-status.warning {
+            background: linear-gradient(135deg, rgba(255, 149, 0, 0.15), rgba(255, 45, 85, 0.15));
+        }
+
+        .dsr-status.warning .status-title {
+            color: var(--warning);
+        }
+
+        .dsr-status.danger {
+            background: linear-gradient(135deg, rgba(255, 59, 48, 0.15), rgba(255, 45, 85, 0.15));
+        }
+
+        .dsr-status.danger .status-title {
+            color: var(--danger);
+        }
+
+        /* Info Card */
+        .info-card {
+            background: var(--input-bg);
+            border-radius: 16px;
+            padding: 18px;
+            border-left: 4px solid var(--accent-blue);
+        }
+
+        .info-title {
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .info-text {
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        /* Breakdown Chart */
+        .breakdown-chart {
+            margin-top: 20px;
+        }
+
+        .chart-title {
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .chart-bar {
+            display: flex;
+            height: 40px;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 16px;
+        }
+
+        .bar-segment {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 700;
+            color: white;
+            transition: all 0.3s ease;
+        }
+
+        .bar-segment:hover {
+            filter: brightness(1.1);
+        }
+
+        .chart-legend {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 4px;
+        }
+
+        .legend-text {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .legend-value {
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-left: auto;
+        }
+
+        /* Bottom Navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border);
+            padding: 8px 0 calc(8px + env(safe-area-inset-bottom));
+            display: flex;
+            justify-content: space-around;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            z-index: 100;
+            max-width: 428px;
+            margin: 0 auto;
+        }
+
+        .nav-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            padding: 8px;
+            cursor: pointer;
+            border: none;
+            background: none;
+            transition: all 0.2s ease;
+            color: var(--text-secondary);
+        }
+
+        .nav-item:active {
+            transform: scale(0.95);
+        }
+
+        .nav-item.active {
+            color: var(--accent-blue);
+        }
+
+        .nav-icon {
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .nav-label {
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        /* Animations */
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes bounce {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        /* Hide scrollbar */
+        ::-webkit-scrollbar {
+            display: none;
+        }
+
+        * {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="mobile-frame">
+        <!-- Status Bar -->
+        <div class="status-bar">
+            <div class="status-left">
+                <span>9:41</span>
+            </div>
+            <div class="status-right">
+                <span>📶</span>
+                <span>📡</span>
+                <span>🔋</span>
+            </div>
+        </div>
+
+        <!-- Navigation Bar -->
+        <div class="navbar">
+            <div class="nav-left">
+                <button class="back-btn" id="backBtn" onclick="showHome()">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                        <path d="M12 4L6 10L12 16" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+                <div class="nav-title" id="navTitle">FinCalc</div>
+            </div>
+            <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()">
+                <svg id="sunIcon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <path d="M12 18a6 6 0 1 1 0-12 6 6 0 0 1 0 12zm0-2a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM11 1h2v3h-2V1zm0 19h2v3h-2v-3zM3.515 4.929l1.414-1.414L7.05 5.636 5.636 7.05 3.515 4.93zM16.95 18.364l1.414-1.414 2.121 2.121-1.414 1.414-2.121-2.121zm2.121-14.85l1.414 1.415-2.121 2.121-1.414-1.414 2.121-2.121zM5.636 16.95l1.414 1.414-2.121 2.121-1.414-1.414 2.121-2.121zM23 11v2h-3v-2h3zM4 11v2H1v-2h3z"/>
+                </svg>
+                <svg id="moonIcon" style="display:none;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <path d="M10 7a7 7 0 0 0 12 4.9v.1c0 5.523-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2h.1A6.979 6.979 0 0 0 10 7zm-6 5a8 8 0 0 0 15.062 3.762A9 9 0 0 1 8.238 4.938 7.999 7.999 0 0 0 4 12z"/>
+                </svg>
+            </button>
+        </div>
+
+        <!-- Home Page -->
+        <div class="home-page" id="homePage">
+            <div class="home-header">
+                <div class="greeting">Financial Tools 💰</div>
+                <div class="subtitle">Choose your calculator</div>
+            </div>
+
+            <div class="calculator-grid">
+                <div class="calc-card blue" onclick="showCalculator('carLoan')">
+                    <div class="card-header">
+                        <div class="card-icon blue">🚗</div>
+                        <div class="card-content">
+                            <div class="card-title">Car Loan Calculator</div>
+                            <div class="card-subtitle">Automotive Finance</div>
+                        </div>
+                    </div>
+                    <div class="card-desc">
+                        Calculate your monthly car loan payments, total interest, and loan breakdown with ease.
+                    </div>
+                    <div class="card-features">
+                        <span class="feature-tag">💵 Monthly Payment</span>
+                        <span class="feature-tag">📊 Breakdown</span>
+                        <span class="feature-tag">📈 Interest</span>
+                    </div>
+                </div>
+
+                <div class="calc-card orange" onclick="showCalculator('dsr')">
+                    <div class="card-header">
+                        <div class="card-icon orange">📊</div>
+                        <div class="card-content">
+                            <div class="card-title">DSR Calculator</div>
+                            <div class="card-subtitle">Debt Service Ratio</div>
+                        </div>
+                    </div>
+                    <div class="card-desc">
+                        Check your debt service ratio and loan eligibility. Know your borrowing capacity instantly.
+                    </div>
+                    <div class="card-features">
+                        <span class="feature-tag">🎯 DSR Check</span>
+                        <span class="feature-tag">✅ Eligibility</span>
+                        <span class="feature-tag">💡 Capacity</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Car Loan Calculator Page -->
+        <div class="calculator-page" id="carLoanPage">
+            <div class="page-header">
+                <div class="page-icon">🚗</div>
+                <div class="page-title">Car Loan Calculator</div>
+                <div class="page-desc">Calculate your monthly car payments and total cost</div>
+            </div>
+
+            <div class="form-section">
+                <div class="section-header">
+                    <span class="section-icon">💰</span>
+                    <span class="section-title">Loan Details</span>
+                </div>
+
+                <div class="form-row">
+                    <label class="form-label">
+                        Car Price
+                        <span class="info-icon">?</span>
+                    </label>
+                    <div class="input-group">
+                        <span class="input-prefix">RM</span>
+                        <input type="number" class="input-field has-prefix" placeholder="80,000" value="80000">
+                    </div>
+                    <div class="quick-amounts">
+                        <button class="quick-btn">RM 50K</button>
+                        <button class="quick-btn">RM 80K</button>
+                        <button class="quick-btn">RM 100K</button>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <label class="form-label">
+                        Down Payment
+                        <span class="info-icon">?</span>
+                    </label>
+                    <div class="input-group">
+                        <input type="number" class="input-field has-suffix" placeholder="10" value="10">
+                        <span class="input-suffix">%</span>
+                    </div>
+                    <div class="slider-container">
+                        <div class="slider-header">
+                            <span class="slider-label">Adjust percentage</span>
+                            <span class="slider-value">10%</span>
+                        </div>
+                        <div class="slider-track">
+                            <div class="slider-fill" style="width: 20%"></div>
+                            <input type="range" class="slider-input" min="0" max="50" value="10">
+                        </div>
+                        <div class="slider-range">
+                            <span>0%</span>
+                            <span>50%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <div class="section-header">
+                    <span class="section-icon">📈</span>
+                    <span class="section-title">Interest & Term</span>
+                </div>
+
+                <div class="form-row">
+                    <label class="form-label">
+                        Interest Rate
+                        <span class="info-icon">?</span>
+                    </label>
+                    <div class="input-group">
+                        <input type="number" class="input-field has-suffix" placeholder="2.5" value="2.5" step="0.1">
+                        <span class="input-suffix">%</span>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <label class="form-label">
+                        Loan Term
+                        <span class="info-icon">?</span>
+                    </label>
+                    <select class="select-field">
+                        <option>3 years (36 months)</option>
+                        <option>5 years (60 months)</option>
+                        <option selected>7 years (84 months)</option>
+                        <option>9 years (108 months)</option>
+                    </select>
+                </div>
+            </div>
+
+            <button class="calculate-btn">Calculate Payment</button>
+
+            <div class="results-section">
+                <div class="result-primary">
+                    <div class="result-label">Monthly Payment</div>
+                    <div class="result-amount">RM 925</div>
+                    <div class="result-subtext">For 84 months</div>
+                </div>
+
+                <div class="result-grid">
+                    <div class="result-item">
+                        <div class="result-item-label">Loan Amount</div>
+                        <div class="result-item-value">RM 72,000</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-item-label">Down Payment</div>
+                        <div class="result-item-value">RM 8,000</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-item-label">Total Interest</div>
+                        <div class="result-item-value">RM 5,700</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-item-label">Total Payment</div>
+                        <div class="result-item-value">RM 77,700</div>
+                    </div>
+                </div>
+
+                <div class="breakdown-chart">
+                    <div class="chart-title">Payment Breakdown</div>
+                    <div class="chart-bar">
+                        <div class="bar-segment" style="width: 92.7%; background: linear-gradient(135deg, #007aff, #5ac8fa);">
+                            Principal 92.7%
+                        </div>
+                        <div class="bar-segment" style="width: 7.3%; background: linear-gradient(135deg, #ff9500, #ff2d55);">
+                            Interest 7.3%
+                        </div>
+                    </div>
+                    <div class="chart-legend">
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: linear-gradient(135deg, #007aff, #5ac8fa);"></div>
+                            <span class="legend-text">Principal</span>
+                            <span class="legend-value">RM 72,000</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: linear-gradient(135deg, #ff9500, #ff2d55);"></div>
+                            <span class="legend-text">Interest</span>
+                            <span class="legend-value">RM 5,700</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="info-card">
+                    <div class="info-title">
+                        💡 Tip
+                    </div>
+                    <div class="info-text">
+                        A larger down payment reduces your monthly payment and total interest paid over the loan term.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- DSR Calculator Page -->
+        <div class="calculator-page" id="dsrPage">
+            <div class="page-header">
+                <div class="page-icon">📊</div>
+                <div class="page-title">DSR Calculator</div>
+                <div class="page-desc">Calculate your debt service ratio and loan eligibility</div>
+            </div>
+
+            <div class="form-section">
+                <div class="section-header">
+                    <span class="section-icon">💵</span>
+                    <span class="section-title">Monthly Income</span>
+                </div>
+
+                <div class="form-row">
+                    <label class="form-label">
+                        Gross Monthly Income
+                        <span class="info-icon">?</span>
+                    </label>
+                    <div class="input-group">
+                        <span class="input-prefix">RM</span>
+                        <input type="number" class="input-field has-prefix" placeholder="5,000" value="5000">
+                    </div>
+                    <div class="quick-amounts">
+                        <button class="quick-btn">RM 3K</button>
+                        <button class="quick-btn">RM 5K</button>
+                        <button class="quick-btn">RM 8K</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <div class="section-header">
+                    <span class="section-icon">💳</span>
+                    <span class="section-title">Monthly Commitments</span>
+                </div>
+
+                <div class="form-row">
+                    <label class="form-label">
+                        Car Loan Payment
+                        <span class="info-icon">?</span>
+                    </label>
+                    <div class="input-group">
+                        <span class="input-prefix">RM</span>
+                        <input type="number" class="input-field has-prefix" placeholder="800" value="800">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <label class="form-label">
+                        Housing Loan Payment
+                        <span class="info-icon">?</span>
+                    </label>
+                    <div class="input-group">
+                        <span class="input-prefix">RM</span>
+                        <input type="number" class="input-field has-prefix" placeholder="1,500" value="1500">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <label class="form-label">
+                        Credit Card Payment
+                        <span class="info-icon">?</span>
+                    </label>
+                    <div class="input-group">
+                        <span class="input-prefix">RM</span>
+                        <input type="number" class="input-field has-prefix" placeholder="200" value="200">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <label class="form-label">
+                        Other Debts
+                        <span class="info-icon">?</span>
+                    </label>
+                    <div class="input-group">
+                        <span class="input-prefix">RM</span>
+                        <input type="number" class="input-field has-prefix" placeholder="0" value="0">
+                    </div>
+                </div>
+            </div>
+
+            <button class="calculate-btn">Calculate DSR</button>
+
+            <div class="results-section">
+                <div class="result-primary">
+                    <div class="result-label">Your DSR</div>
+                    <div class="result-amount">50%</div>
+                    <div class="result-subtext">Debt Service Ratio</div>
+                </div>
+
+                <div class="dsr-status warning">
+                    <div class="status-icon">⚠️</div>
+                    <div class="status-title">Moderate Risk</div>
+                    <div class="status-desc">
+                        Your DSR is at 50%. Banks typically prefer a DSR below 60% for loan approval.
+                    </div>
+                </div>
+
+                <div class="result-grid">
+                    <div class="result-item">
+                        <div class="result-item-label">Monthly Income</div>
+                        <div class="result-item-value">RM 5,000</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-item-label">Total Debt</div>
+                        <div class="result-item-value">RM 2,500</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-item-label">Free Cash</div>
+                        <div class="result-item-value">RM 2,500</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-item-label">Max Capacity</div>
+                        <div class="result-item-value">RM 3,000</div>
+                    </div>
+                </div>
+
+                <div class="breakdown-chart">
+                    <div class="chart-title">Debt Breakdown</div>
+                    <div class="chart-bar">
+                        <div class="bar-segment" style="width: 32%; background: linear-gradient(135deg, #007aff, #5ac8fa);">
+                            Car 32%
+                        </div>
+                        <div class="bar-segment" style="width: 60%; background: linear-gradient(135deg, #34c759, #64d2ff);">
+                            Housing 60%
+                        </div>
+                        <div class="bar-segment" style="width: 8%; background: linear-gradient(135deg, #ff9500, #ff2d55);">
+                            Credit 8%
+                        </div>
+                    </div>
+                    <div class="chart-legend">
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: linear-gradient(135deg, #007aff, #5ac8fa);"></div>
+                            <span class="legend-text">Car Loan</span>
+                            <span class="legend-value">RM 800</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: linear-gradient(135deg, #34c759, #64d2ff);"></div>
+                            <span class="legend-text">Housing</span>
+                            <span class="legend-value">RM 1,500</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: linear-gradient(135deg, #ff9500, #ff2d55);"></div>
+                            <span class="legend-text">Credit Card</span>
+                            <span class="legend-value">RM 200</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #8e8e93;"></div>
+                            <span class="legend-text">Others</span>
+                            <span class="legend-value">RM 0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="info-card">
+                    <div class="info-title">
+                        💡 What is DSR?
+                    </div>
+                    <div class="info-text">
+                        DSR (Debt Service Ratio) measures the percentage of your monthly income used to service debts. A lower DSR means better loan eligibility. Most banks require DSR below 60-70%.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Navigation -->
+        <div class="bottom-nav">
+            <button class="nav-item active" onclick="showHome()">
+                <div class="nav-icon">🏠</div>
+                <div class="nav-label">Home</div>
+            </button>
+            <button class="nav-item">
+                <div class="nav-icon">📊</div>
+                <div class="nav-label">History</div>
+            </button>
+            <button class="nav-item">
+                <div class="nav-icon">⚙️</div>
+                <div class="nav-label">Settings</div>
+            </button>
+            <button class="nav-item">
+                <div class="nav-icon">👤</div>
+                <div class="nav-label">Profile</div>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Theme Toggle
+        function toggleTheme() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-theme', newTheme);
+            
+            const sunIcon = document.getElementById('sunIcon');
+            const moonIcon = document.getElementById('moonIcon');
+            
+            if (newTheme === 'dark') {
+                sunIcon.style.display = 'none';
+                moonIcon.style.display = 'block';
+            } else {
+                sunIcon.style.display = 'block';
+                moonIcon.style.display = 'none';
+            }
+        }
+
+        // Navigation
+        function showHome() {
+            document.getElementById('homePage').style.display = 'block';
+            document.getElementById('carLoanPage').style.display = 'none';
+            document.getElementById('dsrPage').style.display = 'none';
+            document.getElementById('navTitle').textContent = 'FinCalc';
+            document.getElementById('backBtn').style.display = 'none';
+        }
+
+        function showCalculator(type) {
+            document.getElementById('homePage').style.display = 'none';
+            document.getElementById('backBtn').style.display = 'flex';
+            
+            if (type === 'carLoan') {
+                document.getElementById('carLoanPage').style.display = 'block';
+                document.getElementById('dsrPage').style.display = 'none';
+                document.getElementById('navTitle').textContent = 'Car Loan';
+            } else if (type === 'dsr') {
+                document.getElementById('carLoanPage').style.display = 'none';
+                document.getElementById('dsrPage').style.display = 'block';
+                document.getElementById('navTitle').textContent = 'DSR Calculator';
+            }
+            
+            window.scrollTo(0, 0);
+        }
+
+        // Slider interaction simulation
+        document.addEventListener('DOMContentLoaded', function() {
+            const sliders = document.querySelectorAll('.slider-input');
+            sliders.forEach(slider => {
+                slider.addEventListener('input', function() {
+                    const fill = this.parentElement.querySelector('.slider-fill');
+                    const value = this.parentElement.parentElement.querySelector('.slider-value');
+                    const percentage = (this.value / this.max) * 100;
+                    fill.style.width = percentage + '%';
+                    if (value) {
+                        value.textContent = this.value + '%';
+                    }
+                });
+            });
+
+            // Quick amount buttons
+            const quickBtns = document.querySelectorAll('.quick-btn');
+            quickBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const input = this.parentElement.previousElementSibling.querySelector('.input-field');
+                    const value = this.textContent.replace('RM ', '').replace('K', '000');
+                    input.value = value;
+                });
+            });
+        });
+    </script>
+</body>
+</html>
